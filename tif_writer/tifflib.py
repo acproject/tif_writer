@@ -6,21 +6,32 @@ import numpy as np
 import os
 import sys
 
+'''Used for writing tif file'''
 
-#   用于多次、在任意位置写tiff图像，会创建中间的hdf5文件用于保存数据
-#   其不利的方面是写数据会占用较大磁盘空间，因此如果全是设定的背景，比如0，就不要写入了
-#
+
 #   初始化参数：
 #       target_tiff: 目标tiff路径
 #       tiff_width: 目标tiff的宽度
 #       tiff_height: 目标tiff的高度
 #       default_val: tiff的初始值，默认0
 #       write_tile_size: 最终写tiff时使用的块大小，默认为512
-#       chunk_size: 暂存数据的大小，默认512
+#       chunk_size: 暂存数据的大小，默认1024
 #   方法：
 #       write(x, y, tile)：以位置(x, y)为左上角，写入一个任意大小的tile
 #       write_center(x, y, tile)：以位置(x, y)为中心，写入一个任意大小的tile
 #       finish()：完成所有数据的写入后，调用该命令生成最终的tiff文件
+
+#   Initialization:
+#       target_tiff: the path for saving tif file
+#       tiff_width: the width of the tif file
+#       tiff_height: the height of the tif file
+#       default_val: initial value of all pixels in tif file, default = 0
+#       write_tile_size: TileSize used in mir.writer, you can leave this as default
+#       chunk_size: chunk size for building hdf5 file, you can leave this as default
+#   Method:
+#       write(x, y, tile): write a tile at location (x,y) (top left coordinates), tile: 2-d uint8 ndarray of arbitary size
+#       write(x, y, tile): write a tile at location (x,y) (center coordinates), tile: 2-d uint8 ndarray of arbitrary size
+#       finish(): when all data has been writen, call this to obtain final tif file.
 class Tiff_writer():
     def __init__(self, target_tiff, tiff_width, tiff_height,
                  default_val=0,
@@ -259,6 +270,20 @@ class Tiff_writer():
         except:
             print('error happen while cleaning intermedia hdf5 file')
 
+
+'''
+    Used for build a tif file from an existed image
+    e.g. You use otsu to get a foreground mask at lower resolution, now you want to enlarge it to the same size as original slide
+'''
+#   Inputs:
+#       image: Path of an image or ndarray
+#       target_tiff: Path of the target tif file
+#       expand_rate: The amplification. For example, you generate mask at level 5, then it should be 32 to match slide at level 0
+#       spacing: The spacing of generated tif, not important if you don't use spacing property of a slide
+#       assigned_height: The target height can be calculated by image.height * expand_rate, but you can set this manually in case of indivisible issue
+#       assigned_height: Similar as "assigned_height"
+#       show_process: Do you want to show a process bar in the terminal?
+#       tile_size: Just leave it as default.
 
 def build_tif_from_image(image, target_tiff, expand_rate=1,
                          spacing=None, assigned_height=None, assigned_width=None,
